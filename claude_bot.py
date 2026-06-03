@@ -2,7 +2,7 @@ import anthropic
 import os
 from dotenv import load_dotenv
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 from telegram.constants import ChatAction, ParseMode
 
 load_dotenv()
@@ -28,6 +28,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     history[user_id].append({"role": "user", "content": user_text})
 
+async def command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    history[update.message.from_user.id] = []
+    command = update.message.text
+    if command == "/start":
+        await update.message.reply_text("Введите ваш запрос.")
+    elif command == "/clear":
+        await update.message.reply_text("История очищена.")
+    elif command == "/help":
+        await update.message.reply_text("You can ask me anything! Just type your question and I'll do my best to assist you.")
+
     if len(history[user_id]) > max_history_length:
         history[user_id] = history[user_id][-max_history_length:]
 
@@ -43,5 +53,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(reply)
 
 app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+app.add_handler(CommandHandler(["start", "clear", "help"], command_handler))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 app.run_polling()
