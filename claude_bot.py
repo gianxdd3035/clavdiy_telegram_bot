@@ -54,8 +54,15 @@ async def command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(reply)
 
+    PORT = int(os.environ.get("PORT", 8080))
+    WEBHOOK_URL = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+
 app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 app.add_handler(CommandHandler(["start", "clear", "help"], command_handler))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 print("Clavdiy is now online")
-app.run_polling()
+app.run_webhook(
+    listen="0.0.0.0",
+    port=PORT,
+    webhook_url=f"https://{WEBHOOK_URL}"
+)
