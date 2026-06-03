@@ -57,4 +57,5 @@ async def command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 app.add_handler(CommandHandler(["start", "clear", "help"], command_handler))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+print("Clavdiy is now online")
 app.run_polling()
