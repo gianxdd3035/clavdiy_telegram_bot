@@ -1,1 +1,1 @@
-worker: python claude_bot.py
+web: python claude_bot.py
