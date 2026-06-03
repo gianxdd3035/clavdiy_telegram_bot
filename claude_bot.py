@@ -15,6 +15,8 @@ history = {}
 max_history_length = 20
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message:
+        return
     user_id = update.message.from_user.id
     user_text = update.message.text
 
