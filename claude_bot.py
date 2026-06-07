@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
-from telegram.constants import ChatAction
+from telegram.constants import ChatAction, ParseMode
 
 load_dotenv()
 
@@ -15,11 +15,24 @@ client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
 history = {}
 max_history_length = 20
 
+async def send_reply(update, reply):
+    try:
+        await update.message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
+    except Exception:
+        await update.message.reply_text(reply)
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
     user_id = update.message.from_user.id
     user_text = update.message.text
+
+    bot_username = context.bot.username
+    user_text = user_text.replace(f"@{bot_username}", "").strip()
+
+    if not user_text:
+        await update.message.reply_text("Введите ваш запрос.")
+        return
 
     await context.bot.send_chat_action(
         chat_id=update.effective_chat.id,
@@ -43,7 +56,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply = response.content[0].text
     history[user_id].append({"role": "assistant", "content": reply})
 
-    await update.message.reply_text(reply)
+    await send_reply(update, reply)
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
@@ -92,7 +105,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply = response.content[0].text
     history[user_id].append({"role": "assistant", "content": reply})
 
-    await update.message.reply_text(reply)
+    await send_reply(update, reply)
 
 async def command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
@@ -107,6 +120,9 @@ async def command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif command == "/help":
         await update.message.reply_text("You can ask me anything! Just type your question and I'll do my best to assist you.")
 
+async def error_handler(update, context):
+    print(f"Ошибка: {context.error}")
+
 PORT = int(os.environ.get("PORT", 8080))
 WEBHOOK_URL = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 
@@ -114,6 +130,7 @@ app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 app.add_handler(CommandHandler(["start", "clear", "help"], command_handler))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+app.add_error_handler(error_handler)
 
 print("Clavdiy is now online")
 app.run_webhook(
