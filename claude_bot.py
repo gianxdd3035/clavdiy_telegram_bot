@@ -15,9 +15,11 @@ client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
 history = {}
 max_history_length = 20
 
+SYSTEM_PROMPT = "Format your responses using HTML tags supported by Telegram: <b>bold</b>, <i>italic</i>, <code>code</code>, <pre>block</pre>. Do not use Markdown."
+
 async def send_reply(update, reply):
     try:
-        await update.message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
+        await update.message.reply_text(reply, parse_mode=ParseMode.HTML)
     except Exception:
         await update.message.reply_text(reply)
 
@@ -48,9 +50,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         history[user_id] = history[user_id][-max_history_length:]
 
     response = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=1024,
-        messages=history[user_id]
+    model="claude-opus-4-5",
+    max_tokens=1024,
+    system=SYSTEM_PROMPT,
+    messages=history[user_id]
     )
 
     reply = response.content[0].text
@@ -97,9 +100,10 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         history[user_id] = history[user_id][-max_history_length:]
 
     response = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=1024,
-        messages=history[user_id]
+    model="claude-opus-4-5",
+    max_tokens=1024,
+    system=SYSTEM_PROMPT,
+    messages=history[user_id]
     )
 
     reply = response.content[0].text
