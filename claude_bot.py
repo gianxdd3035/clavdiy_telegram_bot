@@ -24,6 +24,7 @@ async def send_reply(update, reply):
         await update.message.reply_text(reply)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f"Входящее сообщение: {update.message}")
     if not update.message:
         return
     user_id = update.message.from_user.id
