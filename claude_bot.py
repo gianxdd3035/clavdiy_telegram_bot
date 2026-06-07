@@ -1,6 +1,7 @@
 import anthropic
 import base64
 import os
+import re
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
@@ -15,13 +16,23 @@ client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
 history = {}
 max_history_length = 20
 
-SYSTEM_PROMPT = "Format your responses using HTML tags supported by Telegram: <b>bold</b>, <i>italic</i>, <code>code</code>, <pre>block</pre>. Do not use Markdown."
-
 async def send_reply(update, reply):
     try:
         await update.message.reply_text(reply, parse_mode=ParseMode.HTML)
     except Exception:
         await update.message.reply_text(reply)
+
+def markdown_to_html(text):
+    text = re.sub(
+        r'```(?:\w+)?\n(.*?)```',
+        lambda m: f'<pre><code>{m.group(1).strip()}</code></pre>',
+        text,
+        flags=re.DOTALL
+    )
+    text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
+    text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
+    text = re.sub(r'\*(.+?)\*', r'<i>\1</i>', text)
+    return text
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"Входящее сообщение: {update.message}")
@@ -53,7 +64,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = client.messages.create(
     model="claude-opus-4-5",
     max_tokens=1024,
-    system=SYSTEM_PROMPT,
     messages=history[user_id]
     )
 
@@ -103,7 +113,6 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = client.messages.create(
     model="claude-opus-4-5",
     max_tokens=1024,
-    system=SYSTEM_PROMPT,
     messages=history[user_id]
     )
 
