@@ -45,7 +45,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = user_text.replace(f"@{bot_username}", "").strip()
 
     if not user_text:
-        await update.message.reply_text("Введите ваш запрос.")
+        await update.message.reply_text("Enter your query.")
         return
 
     await context.bot.send_chat_action(
@@ -77,7 +77,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     user_id = update.message.from_user.id
-    caption = update.message.caption or "Что на этом изображении?"
+    caption = update.message.caption
 
     await context.bot.send_chat_action(
         chat_id=update.effective_chat.id,
