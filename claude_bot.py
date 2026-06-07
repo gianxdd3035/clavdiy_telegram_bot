@@ -127,10 +127,10 @@ async def command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if command == "/start":
         history[user_id] = []
-        await update.message.reply_text("Введите ваш запрос.")
+        await update.message.reply_text("Enter your query.")
     elif command == "/clear":
         history[user_id] = []
-        await update.message.reply_text("История очищена.")
+        await update.message.reply_text("History cleared.")
     elif command == "/help":
         await update.message.reply_text("You can ask me anything! Just type your question and I'll do my best to assist you.")
 
