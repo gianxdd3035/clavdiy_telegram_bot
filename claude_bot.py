@@ -96,7 +96,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-    command = update.message.text
+    command = update.message.text.split('@')[0]
 
     if command == "/start":
         history[user_id] = []
